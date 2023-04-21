@@ -9,7 +9,7 @@ import cv2
 import os
 import scipy.io
 import shutil
-import matplotlib.patches as patches
+
 
 # Path to images and annotations
 path_images = "/101_ObjectCategories/airplanes/"
@@ -120,7 +120,7 @@ class Patches(layers.Layer):
             rates=[1, 1, 1, 1],
             padding="VALID",
         )
-        # return patches
+        #return patches
         return tf.reshape(patches, [batch_size, -1, patches.shape[-1]])
 
 patch_size = 32  # Size of the patches to be extracted from the input images
@@ -288,7 +288,7 @@ vit_object_detector = create_vit_object_detector(
 history = run_experiment(
     vit_object_detector, learning_rate, weight_decay, batch_size, num_epochs
 )
-
+import matplotlib.patches as patches
 # Saves the model in current path
 vit_object_detector.save("vit_object_detector.h5", save_format="h5")
 
