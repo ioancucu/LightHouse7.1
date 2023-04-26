@@ -325,6 +325,8 @@ def bounding_box_intersection_over_union(box_predicted, box_truth):
 
 i, mean_iou = 0, 0
 
+test_image =  "/101_ObjectCategories/airplanes/"
+
 # Compare results for 10 images in the test set
 for input_image in x_test[:10]:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 15))
