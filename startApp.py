@@ -14,6 +14,7 @@ import shutil
 # Path to images and annotations
 path_images = "/101_ObjectCategories/airplanes/"
 path_annot = "/Annotations/Airplanes_Side_2/"
+path_image_tests = "/101_ObjectCategories/Test/airplanes/"
 
 path_to_downloaded_file = keras.utils.get_file(
     fname="caltech_101_zipped",
@@ -35,12 +36,22 @@ annot_paths = [
     f for f in os.listdir(path_annot) if os.path.isfile(os.path.join(path_annot, f))
 ]
 
+images_test_paths = [f for f in os.listdir(path_image_tests) if os.path.isfile(os.path.join(path_image_tests, f))]
+
 image_paths.sort()
 annot_paths.sort()
 
 image_size = 224  # resize input images to this size
 
-images, targets = [], []
+images, targets, images_test = [], [], []
+
+def preprocessImageTest(img_test_Path, img_test_Filename, i_size):
+    test_image = keras.utils.load_img(img_test_Path + img_test_Filename[0])
+    new_image = test_image.resize((i_size, i_size))
+    images_test.append(keras.utils.img_to_array(new_image))
+   
+    #plt.imshow(test_image)
+    #plt.show()
 
 # loop over the annotations and images, preprocess them and store in lists
 for i in range(0, len(annot_paths)):
@@ -78,10 +89,14 @@ for i in range(0, len(annot_paths)):
     np.asarray(images[: int(len(images) * 0.8)]),
     np.asarray(targets[: int(len(targets) * 0.8)]),
 )
+preprocessImageTest(path_image_tests, images_test_paths, image_size)
+
 (x_test), (y_test) = (
-    np.asarray(images[int(len(images) * 0.8) :]),
-    np.asarray(targets[int(len(targets) * 0.8) :]),
+    np.asarray(images_test[int(len(images_test)* 0.8)]),
+    np.asarray(images_test[int(len(images_test)* 0.8)]),
 )
+
+
 
 def mlp(x, hidden_units, dropout_rate):
     for units in hidden_units:
@@ -125,23 +140,23 @@ class Patches(layers.Layer):
 
 patch_size = 32  # Size of the patches to be extracted from the input images
 
-plt.figure(figsize=(4, 4))
-plt.imshow(x_train[0].astype("uint8"))
-plt.axis("off")
+#plt.figure(figsize=(4, 4))
+#plt.imshow(x_train[0].astype("uint8"))
+#plt.axis("off")
 
 patches = Patches(patch_size)(tf.convert_to_tensor([x_train[0]]))
-print(f"Image size: {image_size} X {image_size}")
-print(f"Patch size: {patch_size} X {patch_size}")
-print(f"{patches.shape[1]} patches per image \n{patches.shape[-1]} elements per patch")
+#print(f"Image size: {image_size} X {image_size}")
+#print(f"Patch size: {patch_size} X {patch_size}")
+#print(f"{patches.shape[1]} patches per image \n{patches.shape[-1]} elements per patch")
 
 
 n = int(np.sqrt(patches.shape[1]))
-plt.figure(figsize=(4, 4))
+#plt.figure(figsize=(4, 4))
 for i, patch in enumerate(patches[0]):
     ax = plt.subplot(n, n, i + 1)
     patch_img = tf.reshape(patch, (patch_size, patch_size, 3))
-    plt.imshow(patch_img.numpy().astype("uint8"))
-    plt.axis("off")
+    #plt.imshow(patch_img.numpy().astype("uint8"))
+    #plt.axis("off")
 
 class PatchEncoder(layers.Layer):
     def __init__(self, num_patches, projection_dim):
@@ -325,17 +340,16 @@ def bounding_box_intersection_over_union(box_predicted, box_truth):
 
 i, mean_iou = 0, 0
 
-test_image =  "/101_ObjectCategories/airplanes/"
 
 # Compare results for 10 images in the test set
-for input_image in x_test[:10]:
+for input_image in x_test[:1]:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 15))
     im = input_image
 
     # Display the image
     ax1.imshow(im.astype("uint8"))
     ax2.imshow(im.astype("uint8"))
-
+    plt.show()
     input_image = cv2.resize(
         input_image, (image_size, image_size), interpolation=cv2.INTER_AREA
     )
